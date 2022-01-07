@@ -1,6 +1,6 @@
 package com.yachae.teamauction.dto;
 
-import com.yachae.teamauction.domain.ChatLog;
+import com.yachae.teamauction.domain.chat.ChatLog;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
@@ -20,6 +20,9 @@ public class ChatDto {
     private String message;
     private LocalDateTime messageTime;
 
+    public boolean isBid() {
+        return message.startsWith("!입찰");
+    }
 
     public ChatLog toEntity() {
         return ChatLog.builder()

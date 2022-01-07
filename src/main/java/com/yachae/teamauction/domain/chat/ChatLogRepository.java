@@ -1,4 +1,4 @@
-package com.yachae.teamauction.domain;
+package com.yachae.teamauction.domain.chat;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 

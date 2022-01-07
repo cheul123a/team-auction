@@ -21,10 +21,8 @@ public class SocketController {
     private final TeamAuctionService teamAuctionService;
 
     @MessageMapping("/chat")
-    @SendTo("/topic/chatListener")
-    public ChatDto chat(ChatDto dto) {
-        teamAuctionService.saveChat(dto);
-        return dto;
+    public void chat(ChatDto dto) {
+        teamAuctionService.processChat(dto);
     }
 
     @MessageMapping("/start-auction")
