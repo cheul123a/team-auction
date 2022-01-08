@@ -92,6 +92,13 @@ public class Player {
         }
     }
 
+    public void setTeam(Team team) {
+        this.team = team;
+        if(!team.getPlayers().contains(this)) {
+            team.getPlayers().add(this);
+        }
+    }
+
 //    @Column
 //    private int teamId;
 

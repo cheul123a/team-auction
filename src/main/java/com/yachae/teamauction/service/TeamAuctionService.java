@@ -1,9 +1,10 @@
 package com.yachae.teamauction.service;
 
 import com.yachae.teamauction.domain.chat.ChatLogRepository;
-import com.yachae.teamauction.domain.most.PlayerMostRepository;
 import com.yachae.teamauction.domain.player.Player;
 import com.yachae.teamauction.domain.player.PlayerRepository;
+import com.yachae.teamauction.domain.team.Team;
+import com.yachae.teamauction.domain.team.TeamRepository;
 import com.yachae.teamauction.dto.ChatDto;
 import com.yachae.teamauction.dto.RegisterPlayerDto;
 import com.yachae.teamauction.global.utils.api.SuccessResponse;
@@ -26,13 +27,14 @@ public class TeamAuctionService {
 
     private final ChatLogRepository chatLogRepository;
     private final PlayerRepository playerRepository;
-    private final PlayerMostRepository playerMostRepository;
+    private final TeamRepository teamRepository;
     private final SimpMessagingTemplate messagingTemplate;
 
     private boolean isAuctionStarted = false;
     private int currentHighestBid = 0;
     private String currentBidder = "";
     private Player currentBiddingPlayer;
+    private List<Team> currentBidders = teamRepository.findAll();
 
     public void processChat(ChatDto dto) {
         sendChat(dto);
@@ -44,6 +46,13 @@ public class TeamAuctionService {
                 currentHighestBid = bidBalance;
                 currentBidder = dto.getUserName();
 
+                Team bidder = teamRepository.findByLeader(dto.getUserName());
+
+                bidder.reduceTeamPoint(bidBalance);
+                currentBidders.set(currentBidders.indexOf(bidder), bidder);
+
+
+                sendMessage("/topic/team-info", currentBidders);
                 sendChat(ChatDto.builder()
                         .userName("관리자")
                         .message(String.format("%s님이 %d원을 입찰하셨습니다.", currentBidder, currentHighestBid))
@@ -81,14 +90,18 @@ public class TeamAuctionService {
                     .messageTime(LocalDateTime.now())
                     .build();
         }
+        Team bidTeam = currentBidders.get(currentBidders.indexOf(currentBidder));
+
 //        낙찰한 팀장의 팀에 소속되고 팀장 포인트 감소
-        isAuctionStarted = false;
-        currentHighestBid = 0;
-        currentBidder = "";
-        currentBiddingPlayer = null;
+
+        bidTeam.addTeamPlayer(currentBiddingPlayer);
+        bidTeam.reduceTeamPoint(currentHighestBid);
+        teamRepository.save(bidTeam);
+
+
+        initAuction();
 
         sendMessage("/topic/current-bidding-player", "null");
-
         return ChatDto.builder()
                 .userName("관리자")
                 .message("경매가 종료되었습니다.")
@@ -123,5 +136,13 @@ public class TeamAuctionService {
 
     private void sendMessage(String destination, Object dto) {
         messagingTemplate.convertAndSend(destination, dto);
+    }
+
+    private void initAuction() {
+        isAuctionStarted = false;
+        currentHighestBid = 0;
+        currentBidder = "";
+        currentBiddingPlayer = null;
+        currentBidders = teamRepository.findAll();
     }
 }
