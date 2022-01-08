@@ -29,24 +29,16 @@ public class SocketController {
     @SendTo("/topic/chatListener")
     public ChatDto startAuction() {
 //        TODO: 관리자 인지 체크
-        teamAuctionService.openAuction();
 
-        return ChatDto.builder()
-                .userName("관리자")
-                .message("경매가 시작되었습니다.")
-                .messageTime(LocalDateTime.now())
-                .build();
+
+        return teamAuctionService.openAuction();
     }
 
     @MessageMapping("/end-auction")
     @SendTo("/topic/chatListener")
     public ChatDto endAuction() {
-        teamAuctionService.closeAuction();
 
-        return ChatDto.builder()
-                .userName("관리자")
-                .message("경매가 종료되었습니다.")
-                .messageTime(LocalDateTime.now())
-                .build();
+
+        return teamAuctionService.closeAuction();
     }
 }

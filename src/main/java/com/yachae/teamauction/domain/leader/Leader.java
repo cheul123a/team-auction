@@ -33,7 +33,7 @@ public class Leader {
     @Column
     private String name;
 
-    private
+//    private
 
 
 }
